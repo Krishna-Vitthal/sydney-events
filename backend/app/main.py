@@ -1,9 +1,12 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import asyncio
+import os
 
 from app.config import settings
 from app.database import init_db, async_session_maker
@@ -27,19 +30,15 @@ async def scheduled_scrape():
             print(f"Scheduled scrape error: {e}")
 
 
-async def delayed_initial_scrape():
-    """Run initial scrape after a delay to allow app to start"""
-    await asyncio.sleep(30)  # Wait 30 seconds for app to fully start
-    await scheduled_scrape()
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     print("Initializing database...")
     await init_db()
+    print("Database initialized")
     
     # Schedule automatic scraping every 6 hours
+    # Note: Initial scrape will run on first scheduled interval
     scheduler.add_job(
         scheduled_scrape,
         IntervalTrigger(hours=6),
@@ -49,10 +48,7 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     print("Scheduler started - scraping every 6 hours")
-    
-    # Run initial scrape in background with delay (don't block startup)
-    asyncio.create_task(delayed_initial_scrape())
-    print("Application started successfully")
+    print("Application started successfully - ready to accept requests")
     
     yield
     
@@ -90,15 +86,6 @@ app.include_router(events.router, prefix="/api")
 app.include_router(scraper.router, prefix="/api")
 
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Sydney Events API",
-        "docs": "/docs",
-        "version": "1.0.0"
-    }
-
-
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy"}
@@ -108,6 +95,41 @@ async def health_check():
 async def get_me(current_user = Depends(get_current_user)):
     """Get current authenticated user"""
     return UserResponse.model_validate(current_user)
+
+
+# Serve static frontend files (for production deployment)
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.exists(static_dir):
+    # Serve static assets (js, css, images)
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
+    
+    @app.get("/")
+    async def serve_index():
+        """Serve the SPA index"""
+        return FileResponse(os.path.join(static_dir, "index.html"))
+    
+    @app.get("/{full_path:path}")
+    async def serve_spa(request: Request, full_path: str):
+        """Serve the SPA for all non-API routes"""
+        # Don't serve index.html for API routes
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi"):
+            return {"detail": "Not found"}
+        
+        # Try to serve static file first
+        file_path = os.path.join(static_dir, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        
+        # Fall back to index.html for SPA routing
+        return FileResponse(os.path.join(static_dir, "index.html"))
+else:
+    @app.get("/")
+    async def root():
+        return {
+            "message": "Sydney Events API",
+            "docs": "/docs",
+            "version": "1.0.0"
+        }
 
 
 if __name__ == "__main__":

@@ -1,4 +1,17 @@
-# Root Dockerfile for Render deployment (Backend API)
+# Multi-stage Dockerfile for Render deployment (Backend + Frontend)
+
+# Stage 1: Build Frontend
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /frontend
+
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ .
+RUN npm run build
+
+# Stage 2: Backend with Frontend static files
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -15,6 +28,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application code
 COPY backend/app ./app
+
+# Copy built frontend files
+COPY --from=frontend-builder /frontend/dist ./static
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
