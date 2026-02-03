@@ -20,8 +20,11 @@ COPY backend/app ./app
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
 USER appuser
 
-# Expose port
-EXPOSE 8000
+# Expose port (Render uses PORT env variable)
+EXPOSE 10000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default PORT for Render, can be overridden
+ENV PORT=10000
+
+# Run the application using shell form to expand $PORT
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
