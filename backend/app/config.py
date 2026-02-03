@@ -8,14 +8,14 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Google OAuth
-    google_client_id: str = os.getenv("GOOGLE_CLIENT_ID", "")
-    google_client_secret: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    google_client_id: str = ""
+    google_client_secret: str = ""
     
     # App settings
-    secret_key: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
-    database_url: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./events.db")
-    frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    backend_url: str = os.getenv("BACKEND_URL", "http://localhost:8000")
+    secret_key: str = "dev-secret-key-change-in-production"
+    database_url: str = "sqlite+aiosqlite:///./events.db"
+    frontend_url: str = "http://localhost:5173"
+    backend_url: str = "http://localhost:8000"
     
     # JWT Settings
     algorithm: str = "HS256"
@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 
 @lru_cache()
