@@ -27,6 +27,12 @@ async def scheduled_scrape():
             print(f"Scheduled scrape error: {e}")
 
 
+async def delayed_initial_scrape():
+    """Run initial scrape after a delay to allow app to start"""
+    await asyncio.sleep(30)  # Wait 30 seconds for app to fully start
+    await scheduled_scrape()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -44,8 +50,9 @@ async def lifespan(app: FastAPI):
     scheduler.start()
     print("Scheduler started - scraping every 6 hours")
     
-    # Run initial scrape in background
-    asyncio.create_task(scheduled_scrape())
+    # Run initial scrape in background with delay (don't block startup)
+    asyncio.create_task(delayed_initial_scrape())
+    print("Application started successfully")
     
     yield
     
