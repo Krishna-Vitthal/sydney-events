@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+     :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        @apply bg-gray-50 text-gray-900 antialiased;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center px-6 py-3;
+        @apply bg-gradient-to-r from-primary-600 to-sydney-600;
+        @apply text-white font-semibold rounded-xl;
+        @apply shadow-lg shadow-primary-500/25;
+        @apply transition-all duration-200;
+    }
+    .btn-primary:hover {
+        @apply shadow-xl shadow-primary-500/30;
+        transform: scale(1.02);
+    }
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+    .btn-secondary {
+        @apply inline-flex items-center justify-center px-6 py-3;
+        @apply bg-white text-gray-700 font-semibold rounded-xl;
+        @apply border border-gray-200 shadow-sm;
+        @apply transition-all duration-200;
+    }
+    .btn-secondary:hover {
+        @apply bg-gray-50 border-gray-300;
+    }
+    .card {
+        @apply bg-white rounded-2xl shadow-sm border border-gray-100;
+        @apply transition-all duration-300;
+    }
+    .card:hover {
+        @apply shadow-lg border-gray-200;
+    }
+    .input {
+        @apply w-full px-4 py-3 rounded-xl border border-gray-200;
+        @apply bg-white text-gray-900 placeholder-gray-400;
+        @apply transition-all duration-200;
+    }
+    .input:focus {
+        @apply outline-none ring-2 ring-primary-500 border-transparent;
+    }
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .badge-new {
+        @apply bg-green-100 text-green-800;
+    }
+    .badge-updated {
+        @apply bg-blue-100 text-blue-800;
+    }
+    .badge-inactive {
+        @apply bg-gray-100 text-gray-600;
+    }
+    .badge-imported {
+        @apply bg-purple-100 text-purple-800;
+    }
+}
+
+
+/* Custom scrollbar */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+
+/* Glass effect */
+
+.glass {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+
+/* Gradient text */
+
+.gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-sydney-600 bg-clip-text text-transparent;
+}
